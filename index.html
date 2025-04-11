@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luminous Patterns</title>
+    <style>
+        /* Base styles and reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #fff;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        /* Game container */
+        .game-container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+        }
+        
+        /* Header styles */
+        .title {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            color: #e94560;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(233, 69, 96, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            text-align: center;
+            color: #a4b0be;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Game board */
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 15px;
+            width: 100%;
+            aspect-ratio: 1/1;
+            margin: 0 auto;
+        }
+        
+        .tile {
+            border-radius: 12px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease;
+        }
+        
+        .tile:hover {
+            transform: scale(0.98);
+        }
+        
+        .tile:active {
+            transform: scale(0.92);
+        }
+        
+        .tile::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: inherit;
+        }
+        
+        .tile:hover::before {
+            opacity: 1;
+        }
+        
+        .tile.flash {
+            animation: flash 0.5s ease-out;
+        }
+        
+        @keyframes flash {
+            0% {
+                filter: brightness(1);
+            }
+            50% {
+                filter: brightness(1.8);
+            }
+            100% {
+                filter: brightness(1);
+            }
+        }
+        
+        /* Tile colors */
+        .tile:nth-child(1) {
+            background: #e94560;
+            box-shadow: 0 0 20px rgba(233, 69, 96, 0.3);
+        }
+        
+        .tile:nth-child(2) {
+            background: #0f3460;
+            box-shadow: 0 0 20px rgba(15, 52, 96, 0.3);
+        }
+        
+        .tile:nth-child(3) {
+            background: #ffc107;
+            box-shadow: 0 0 20px rgba(255, 193, 7, 0.3);
+        }
+        
+        .tile:nth-child(4) {
+            background: #4ecca3;
+            box-shadow: 0 0 20px rgba(78, 204, 163, 0.3);
+        }
+        
+        /* Game status */
+        .game-status {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 10px;
+        }
+        
+        .status-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .status-label {
+            font-size: 0.9rem;
+            color: #a4b0be;
+        }
+        
+        .status-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: white;
+        }
+        
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            outline: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-width: 140px;
+        }
+        
+        .btn-primary {
+            background: #e94560;
+            color: white;
+            box-shadow: 0 0 15px rgba(233, 69, 96, 0.3);
+        }
+        
+        .btn-primary:hover {
+            background: #d93a55;
+            box-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #a4b0be;
+            border: 2px solid #a4b0be;
+        }
+        
+        .btn-secondary:hover {
+            color: white;
+            border-color: white;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary:active {
+            transform: translateY(0);
+        }
+        
+        /* Message display */
+        .message {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+        
+        .message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .message.success {
+            background: rgba(78, 204, 163, 0.2);
+            color: #4ecca3;
+        }
+        
+        .message.error {
+            background: rgba(233, 69, 96, 0.2);
+            color: #e94560;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 576px) {
+            .title {
+                font-size: 2rem;
+            }
+            
+            .game-board {
+                gap: 10px;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+        
+        /* Rules modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .modal-content {
+            background: #16213e;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #a4b0be;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .close-modal:hover {
+            color: #fff;
+        }
+        
+        .modal-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #e94560;
+        }
+        
+        .rules-list {
+            list-style-type: none;
+        }
+        
+        .rules-list li {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .rules-list li::before {
+            content: '•';
+            color: #e94560;
+            font-size: 1.2rem;
+        }
+        
+        /* Animation utilities */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container fade-in">
+        <h1 class="title">Luminous Patterns</h1>
+        <p class="subtitle">Remember the pattern and repeat it!</p>
+        
+        <div class="game-board">
+            <div class="tile" data-id="0"></div>
+            <div class="tile" data-id="1"></div>
+            <div class="tile" data-id="2"></div>
+            <div class="tile" data-id="3"></div>
+        </div>
+        
+        <div class="message" id="message"></div>
+        
+        <div class="game-status">
+            <div class="status-item">
+                <span class="status-label">Level</span>
+                <span class="status-value" id="level">1</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Score</span>
+                <span class="status-value" id="score">0</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">High Score</span>
+                <span class="status-value" id="high-score">0</span>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-primary" id="start-btn">Start Game</button>
+            <button class="btn btn-secondary" id="rules-btn">How to Play</button>
+        </div>
+    </div>
+    
+    <div class="modal" id="rules-modal">
+        <div class="modal-content">
+            <button class="close-modal" id="close-modal">&times;</button>
+            <h2 class="modal-title">How to Play</h2>
+            <ul class="rules-list">
+                <li>Watch the pattern of illuminating tiles carefully.</li>
+                <li>After the pattern completes, repeat it by clicking the tiles in the same order.</li>
+                <li>Each successful round adds one step to the pattern, making it progressively more challenging.</li>
+                <li>If you make a mistake, the game ends and your score is recorded.</li>
+                <li>Your score is based on the length of patterns you successfully complete.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Game elements - DOM references
+            const tiles = document.querySelectorAll('.tile');
+            const startButton = document.getElementById('start-btn');
+            const rulesButton = document.getElementById('rules-btn');
+            const messageDisplay = document.getElementById('message');
+            const levelDisplay = document.getElementById('level');
+            const scoreDisplay = document.getElementById('score');
+            const highScoreDisplay = document.getElementById('high-score');
+            const rulesModal = document.getElementById('rules-modal');
+            const closeModal = document.getElementById('close-modal');
+            
+            // Game state variables
+            let sequence = [];          // The pattern to remember
+            let playerSequence = [];    // The player's input pattern
+            let level = 1;              // Current level (length of sequence)
+            let score = 0;              // Player's current score
+            let highScore = localStorage.getItem('luminousHighScore') || 0;
+            let gameActive = false;     // Whether a game is in progress
+            let playerTurn = false;     // Whether it's the player's turn to input
+            
+            // Initialize high score display from localStorage
+            highScoreDisplay.textContent = highScore;
+            
+            // Audio context and sound configuration
+            let audioContext;
+            const notes = [
+                { frequency: 329.63, type: 'sine' }, // E4
+                { frequency: 392.00, type: 'sine' }, // G4
+                { frequency: 440.00, type: 'sine' }, // A4
+                { frequency: 493.88, type: 'sine' }  // B4
+            ];
+            
+            // Initialize audio (must be triggered by user interaction due to browser policies)
+            function initAudio() {
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+            
+            // Play sound for a tile with a specific index
+            function playSound(tileIndex) {
+                if (!audioContext) return;
+                
+                // Create oscillator and gain nodes
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                // Configure the sound
+                oscillator.type = notes[tileIndex].type;
+                oscillator.frequency.value = notes[tileIndex].frequency;
+                gainNode.gain.value = 0.3;
+                
+                // Connect audio nodes
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                // Play the sound with a nice fade-out
+                oscillator.start();
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            }
+            
+            // Flash a tile with visual and audio feedback
+            function flashTile(tile, duration = 500) {
+                return new Promise(resolve => {
+                    tile.classList.add('flash');
+                    const tileIndex = parseInt(tile.dataset.id);
+                    playSound(tileIndex);
+                    
+                    // Remove flash effect after duration
+                    setTimeout(() => {
+                        tile.classList.remove('flash');
+                        // Small pause between tiles
+                        setTimeout(resolve, 100);
+                    }, duration);
+                });
+            }
+            
+            // Display a message to the player
+            function showMessage(text, type, duration = 2000) {
+                messageDisplay.textContent = text;
+                messageDisplay.className = `message ${type} show`;
+                
+                // Hide message after duration
+                setTimeout(() => {
+                    messageDisplay.classList.remove('show');
+                }, duration);
+            }
+            
+            // Play the entire current sequence
+            async function playSequence() {
+                playerTurn = false;
+                startButton.disabled = true;
+                
+                // Brief pause before starting sequence
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Play each step in the sequence sequentially
+                for (let i = 0; i < sequence.length; i++) {
+                    const tileIndex = sequence[i];
+                    await flashTile(tiles[tileIndex]);
+                }
+                
+                // Now it's the player's turn
+                playerTurn = true;
+                startButton.disabled = false;
+                showMessage("Your turn! Repeat the pattern.", "success");
+            }
+            
+            // Add a random tile to the sequence for the next level
+            function generateNextSequence() {
+                const randomTile = Math.floor(Math.random() * 4);
+                sequence.push(randomTile);
+                level = sequence.length;
+                levelDisplay.textContent = level;
+            }
+            
+            // Handle player clicking on a tile
+            function handleTileClick(e) {
+                // Ignore clicks when it's not the player's turn or game is not active
+                if (!playerTurn || !gameActive) return;
+                
+                const tile = e.target;
+                const tileIndex = parseInt(tile.dataset.id);
+                
+                // Visual and audio feedback
+                flashTile(tile, 300);
+                playerSequence.push(tileIndex);
+                
+                // Check if the player's move matches the sequence
+                const currentIndex = playerSequence.length - 1;
+                
+                // If the player made a mistake, end the game
+                if (playerSequence[currentIndex] !== sequence[currentIndex]) {
+                    endGame();
+                    return;
+                }
+                
+                // If player completed the entire sequence correctly
+                if (playerSequence.length === sequence.length) {
+                    playerTurn = false;
+                    playerSequence = [];
+                    
+                    // Update score based on level
+                    score += level * 10;
+                    scoreDisplay.textContent = score;
+                    
+                    // Show success message
+                    showMessage("Correct! Get ready for the next pattern.", "success");
+                    
+                    // Move to next level after a delay
+                    setTimeout(() => {
+                        generateNextSequence();
+                        playSequence();
+                    }, 1500);
+                }
+            }
+            
+            // Start a new game
+            function startGame() {
+                initAudio();
+                sequence = [];
+                playerSequence = [];
+                level = 1;
+                score = 0;
+                gameActive = true;
+                playerTurn = false;
+                
+                // Reset displays
+                levelDisplay.textContent = level;
+                scoreDisplay.textContent = score;
+                
+                // Generate first sequence
+                generateNextSequence();
+                
+                // Start button becomes restart during game
+                startButton.textContent = "Restart";
+                
+                // Show starting message
+                showMessage("Watch the pattern carefully!", "success");
+                
+                // Play the first sequence after a short delay
+                setTimeout(playSequence, 1000);
+            }
+            
+            // End the game
+            function endGame() {
+                gameActive = false;
+                playerTurn = false;
+                
+                // Visual feedback for game over
+                tiles.forEach(tile => {
+                    tile.classList.add('flash');
+                    setTimeout(() => {
+                        tile.classList.remove('flash');
+                    }, 500);
+                });
+                
+                // Show game over message
+                showMessage("Game Over! Try again.", "error");
+                
+                // Update high score if necessary
+                if (score > highScore) {
+                    highScore = score;
+                    highScoreDisplay.textContent = highScore;
+                    localStorage.setItem('luminousHighScore', highScore);
+                    showMessage("New High Score: " + highScore, "success", 3000);
+                }
+                
+                // Reset start button text
+                startButton.textContent = "Play Again";
+            }
+            
+            // Event listeners
+            startButton.addEventListener('click', startGame);
+            
+            tiles.forEach(tile => {
+                tile.addEventListener('click', handleTileClick);
+            });
+            
+            rulesButton.addEventListener('click', () => {
+                rulesModal.classList.add('active');
+            });
+            
+            closeModal.addEventListener('click', () => {
+                rulesModal.classList.remove('active');
+            });
+            
+            // Close modal when clicking outside content
+            rulesModal.addEventListener('click', (e) => {
+                if (e.target === rulesModal) {
+                    rulesModal.classList.remove('active');
+                }
+            });
+            
+            // Keyboard support for accessibility
+            document.addEventListener('keydown', (e) => {
+                if (!gameActive || !playerTurn) return;
+                
+                // Number keys 1-4 to activate tiles
+                if (e.key >= '1' && e.key <= '4') {
+                    const index = parseInt(e.key) - 1;
+                    tiles[index].click();
+                }
+                
+                // Escape key to close modal
+                if (e.key === 'Escape' && rulesModal.classList.contains('active')) {
+                    rulesModal.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
