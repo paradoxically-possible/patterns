@@ -93,4 +93,4 @@ A captivating Simon Says-style memory game that challenges your pattern recognit
 
 ---
 
-**Ready to test your memory?** Simply open the HTML file in any modern browser and start playing! No installation required.
+**Ready to test your memory?** Simply go to `https://paradoxically-possible.github.io/patterns/` in any modern browser and start playing! No installation required.
